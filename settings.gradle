@@ -1,0 +1,4 @@
+rootProject.name = 'mcp'
+
+include("mcp-server")
+include("agent-app")

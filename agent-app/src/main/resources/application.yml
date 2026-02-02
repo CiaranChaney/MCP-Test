@@ -1,0 +1,19 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: agent-app
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    mcp:
+      client:
+        sse:
+          connections:
+            local-mcp:
+              url: http://localhost:8081
+
+logging:
+  level:
+    root: debug

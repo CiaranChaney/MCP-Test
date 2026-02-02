@@ -1,0 +1,10 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: mcp-server
+
+logging:
+  level:
+    root: debug
