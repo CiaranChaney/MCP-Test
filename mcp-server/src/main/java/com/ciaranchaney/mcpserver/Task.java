@@ -72,8 +72,12 @@ public class Task {
     
     public void setCompleted(Boolean completed) {
         this.completed = completed;
-        if (completed && completedAt == null) {
-            this.completedAt = Instant.now();
+        if (completed != null && completed) {
+            if (this.completedAt == null) {
+                this.completedAt = Instant.now();
+            }
+        } else {
+            this.completedAt = null;
         }
     }
     

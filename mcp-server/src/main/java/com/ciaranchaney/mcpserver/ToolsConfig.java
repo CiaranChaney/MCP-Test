@@ -19,6 +19,19 @@ public class ToolsConfig {
         this.taskRepository = taskRepository;
     }
 
+    private Map<String, Object> taskToMap(Task task) {
+        Map<String, Object> taskMap = new HashMap<>();
+        taskMap.put("id", task.getId());
+        taskMap.put("title", task.getTitle());
+        taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
+        taskMap.put("completed", task.getCompleted());
+        taskMap.put("createdAt", task.getCreatedAt().toString());
+        if (task.getCompletedAt() != null) {
+            taskMap.put("completedAt", task.getCompletedAt().toString());
+        }
+        return taskMap;
+    }
+
     @McpTool(name = "sayHello", description = "Say hello to a person.")
     public Map<String, Object> sayHello(
             @McpToolParam(description = "Name of the person", required = true) String name
@@ -63,18 +76,7 @@ public class ToolsConfig {
         List<Task> tasks = taskRepository.findAll();
         
         List<Map<String, Object>> taskList = tasks.stream()
-                .map(task -> {
-                    Map<String, Object> taskMap = new HashMap<>();
-                    taskMap.put("id", task.getId());
-                    taskMap.put("title", task.getTitle());
-                    taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
-                    taskMap.put("completed", task.getCompleted());
-                    taskMap.put("createdAt", task.getCreatedAt().toString());
-                    if (task.getCompletedAt() != null) {
-                        taskMap.put("completedAt", task.getCompletedAt().toString());
-                    }
-                    return taskMap;
-                })
+                .map(this::taskToMap)
                 .collect(Collectors.toList());
         
         return Map.of(
@@ -88,18 +90,7 @@ public class ToolsConfig {
             @McpToolParam(description = "ID of the task", required = true) Long id
     ) {
         return taskRepository.findById(id)
-                .map(task -> {
-                    Map<String, Object> taskMap = new HashMap<>();
-                    taskMap.put("id", task.getId());
-                    taskMap.put("title", task.getTitle());
-                    taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
-                    taskMap.put("completed", task.getCompleted());
-                    taskMap.put("createdAt", task.getCreatedAt().toString());
-                    if (task.getCompletedAt() != null) {
-                        taskMap.put("completedAt", task.getCompletedAt().toString());
-                    }
-                    return (Map<String, Object>) taskMap;
-                })
+                .map(this::taskToMap)
                 .orElse(Map.of("error", "Task not found with id: " + id));
     }
 
@@ -122,17 +113,7 @@ public class ToolsConfig {
                         task.setCompleted(completed);
                     }
                     Task updatedTask = taskRepository.save(task);
-                    
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("id", updatedTask.getId());
-                    result.put("title", updatedTask.getTitle());
-                    result.put("description", updatedTask.getDescription() != null ? updatedTask.getDescription() : "");
-                    result.put("completed", updatedTask.getCompleted());
-                    result.put("createdAt", updatedTask.getCreatedAt().toString());
-                    if (updatedTask.getCompletedAt() != null) {
-                        result.put("completedAt", updatedTask.getCompletedAt().toString());
-                    }
-                    return (Map<String, Object>) result;
+                    return taskToMap(updatedTask);
                 })
                 .orElse(Map.of("error", "Task not found with id: " + id));
     }
@@ -162,18 +143,7 @@ public class ToolsConfig {
         List<Task> tasks = taskRepository.findByTitleContainingIgnoreCase(searchTerm);
         
         List<Map<String, Object>> taskList = tasks.stream()
-                .map(task -> {
-                    Map<String, Object> taskMap = new HashMap<>();
-                    taskMap.put("id", task.getId());
-                    taskMap.put("title", task.getTitle());
-                    taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
-                    taskMap.put("completed", task.getCompleted());
-                    taskMap.put("createdAt", task.getCreatedAt().toString());
-                    if (task.getCompletedAt() != null) {
-                        taskMap.put("completedAt", task.getCompletedAt().toString());
-                    }
-                    return taskMap;
-                })
+                .map(this::taskToMap)
                 .collect(Collectors.toList());
         
         return Map.of(
@@ -190,18 +160,7 @@ public class ToolsConfig {
         List<Task> tasks = taskRepository.findByCompleted(completed);
         
         List<Map<String, Object>> taskList = tasks.stream()
-                .map(task -> {
-                    Map<String, Object> taskMap = new HashMap<>();
-                    taskMap.put("id", task.getId());
-                    taskMap.put("title", task.getTitle());
-                    taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
-                    taskMap.put("completed", task.getCompleted());
-                    taskMap.put("createdAt", task.getCreatedAt().toString());
-                    if (task.getCompletedAt() != null) {
-                        taskMap.put("completedAt", task.getCompletedAt().toString());
-                    }
-                    return taskMap;
-                })
+                .map(this::taskToMap)
                 .collect(Collectors.toList());
         
         return Map.of(

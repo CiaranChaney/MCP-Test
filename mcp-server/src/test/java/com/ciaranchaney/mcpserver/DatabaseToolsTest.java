@@ -103,4 +103,19 @@ class DatabaseToolsTest {
         assertTrue(result.containsKey("tasks"));
         assertEquals("completed", result.get("status"));
     }
+
+    @Test
+    void testCompletedAtTimestamp() {
+        // Create a task
+        Map<String, Object> created = toolsConfig.createTask("Task with timestamp", "Test");
+        Long taskId = (Long) created.get("id");
+        
+        // Mark as completed
+        Map<String, Object> completed = toolsConfig.updateTask(taskId, null, null, true);
+        assertTrue(completed.containsKey("completedAt"));
+        
+        // Mark as incomplete again
+        Map<String, Object> incompleted = toolsConfig.updateTask(taskId, null, null, false);
+        assertFalse(incompleted.containsKey("completedAt"));
+    }
 }
