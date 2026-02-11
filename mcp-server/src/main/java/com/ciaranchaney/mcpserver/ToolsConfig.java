@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 public class ToolsConfig {
 
     private final TaskRepository taskRepository;
+    private final ToolSecurityService securityService;
 
-    public ToolsConfig(TaskRepository taskRepository) {
+    public ToolsConfig(TaskRepository taskRepository, ToolSecurityService securityService) {
         this.taskRepository = taskRepository;
+        this.securityService = securityService;
     }
 
     private Map<String, Object> taskToMap(Task task) {
@@ -59,6 +61,11 @@ public class ToolsConfig {
             @McpToolParam(description = "Title of the task", required = true) String title,
             @McpToolParam(description = "Description of the task", required = false) String description
     ) {
+
+        if (!securityService.hasScope("task:write")) {
+            return securityService.accessDeniedResponse("task:write");
+        }
+
         Task task = new Task(title, description);
         Task savedTask = taskRepository.save(task);
         
@@ -73,6 +80,11 @@ public class ToolsConfig {
 
     @McpTool(name = "getAllTasks", description = "Get all tasks from the database.")
     public Map<String, Object> getAllTasks() {
+
+        if (!securityService.hasScope("task:read")) {
+            return securityService.accessDeniedResponse("task:read");
+        }
+
         List<Task> tasks = taskRepository.findAll();
         
         List<Map<String, Object>> taskList = tasks.stream()
@@ -89,6 +101,11 @@ public class ToolsConfig {
     public Map<String, Object> getTaskById(
             @McpToolParam(description = "ID of the task", required = true) Long id
     ) {
+
+        if (!securityService.hasScope("task:read")) {
+            return securityService.accessDeniedResponse("task:read");
+        }
+
         return taskRepository.findById(id)
                 .map(this::taskToMap)
                 .orElse(Map.of("error", "Task not found with id: " + id));
@@ -101,6 +118,11 @@ public class ToolsConfig {
             @McpToolParam(description = "New description of the task", required = false) String description,
             @McpToolParam(description = "Whether the task is completed", required = false) Boolean completed
     ) {
+
+        if (!securityService.hasScope("task:write")) {
+            return securityService.accessDeniedResponse("task:write");
+        }
+
         return taskRepository.findById(id)
                 .map(task -> {
                     if (title != null) {
@@ -118,10 +140,15 @@ public class ToolsConfig {
                 .orElse(Map.of("error", "Task not found with id: " + id));
     }
 
-    @McpTool(name = "deleteTask", description = "Delete a task from the database.")
+    @McpTool(name = "deleteTask", description = "Delete a task from the database. Requires scope: task:delete")
     public Map<String, Object> deleteTask(
             @McpToolParam(description = "ID of the task to delete", required = true) Long id
     ) {
+        // Check for required scope
+        if (!securityService.hasScope("task:delete")) {
+            return securityService.accessDeniedResponse("task:delete");
+        }
+
         if (taskRepository.existsById(id)) {
             taskRepository.deleteById(id);
             return Map.of(
@@ -140,6 +167,11 @@ public class ToolsConfig {
     public Map<String, Object> searchTasks(
             @McpToolParam(description = "Search term for task title", required = true) String searchTerm
     ) {
+
+        if (!securityService.hasScope("task:read")) {
+            return securityService.accessDeniedResponse("task:read");
+        }
+
         List<Task> tasks = taskRepository.findByTitleContainingIgnoreCase(searchTerm);
         
         List<Map<String, Object>> taskList = tasks.stream()
@@ -157,6 +189,11 @@ public class ToolsConfig {
     public Map<String, Object> getTasksByStatus(
             @McpToolParam(description = "Completion status (true for completed, false for incomplete)", required = true) Boolean completed
     ) {
+
+        if (!securityService.hasScope("task:read")) {
+            return securityService.accessDeniedResponse("task:read");
+        }
+
         List<Task> tasks = taskRepository.findByCompleted(completed);
         
         List<Map<String, Object>> taskList = tasks.stream()

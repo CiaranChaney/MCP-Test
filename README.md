@@ -1,16 +1,25 @@
 # MCP Database Tool
 
-This project implements a Model Context Protocol (MCP) server with database access capabilities using Spring Boot.
+This project implements a Model Context Protocol (MCP) server with database access capabilities using Spring Boot, with OAuth2 authentication support.
 
 ## Overview
 
-The MCP server provides tools to interact with an in-memory H2 database for managing tasks. This demonstrates how to create MCP tools that can perform CRUD operations on a database.
+The MCP server provides tools to interact with an in-memory H2 database for managing tasks. This demonstrates how to create MCP tools that can perform CRUD operations on a database. The project includes a full OAuth2 implementation with an agent app client that communicates securely with the MCP server.
+
+## Architecture
+
+- **MCP Server** (port 8081): OAuth2 Resource Server protecting MCP tools
+- **Agent App** (port 8082): OAuth2 Client that uses the MCP server tools
+- **OAuth2 Provider**: Keycloak, Auth0, Okta, or any OAuth2-compliant provider
 
 ## Features
 
 - **Database Integration**: Uses Spring Data JPA with H2 in-memory database
 - **MCP Tools**: Exposes database operations as MCP tools
 - **Task Management**: Create, read, update, delete, and search tasks
+- **OAuth2 Security**: Full OAuth2 authentication and authorization
+- **Development Mode**: Optional no-auth mode for local development
+- **Flexible Providers**: Support for Keycloak, Auth0, Okta, Azure AD, and more
 
 ## MCP Tools Available
 
@@ -74,7 +83,60 @@ The application uses a `Task` entity with the following fields:
 - **Spring Data JPA**: Database access layer
 - **H2 Database**: In-memory database
 - **Spring AI MCP Server**: MCP server implementation
+- **Spring Security**: OAuth2 Resource Server and Client
 - **Java 21**: Programming language
+
+## Quick Start
+
+### Option 1: Development Mode (No Authentication)
+
+For quick local testing without OAuth2:
+
+```powershell
+# Terminal 1 - Start MCP Server
+.\gradlew.bat :mcp-server:bootRun --args='--spring.profiles.active=dev'
+
+# Terminal 2 - Start Agent App
+.\gradlew.bat :agent-app:bootRun --args='--spring.profiles.active=dev'
+
+# Test
+Invoke-RestMethod -Uri "http://localhost:8082/agent/ask" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"prompt": "Create a task called Test Task"}'
+```
+
+### Option 2: Production Mode (With OAuth2)
+
+For full OAuth2 security:
+
+1. **Set up OAuth2 provider** (see [OAUTH2_PROVIDER_COMPARISON.md](OAUTH2_PROVIDER_COMPARISON.md)):
+   ```powershell
+   .\setup-keycloak.ps1  # For Keycloak
+   ```
+
+2. **Configure environment**:
+   ```powershell
+   Copy-Item .env.template .env
+   # Edit .env with your OAuth2 credentials
+   ```
+
+3. **Start applications**:
+   ```powershell
+   .\gradlew.bat :mcp-server:bootRun
+   .\gradlew.bat :agent-app:bootRun
+   ```
+
+4. **Test OAuth2**:
+   ```powershell
+   .\test-oauth2.ps1
+   ```
+
+For detailed setup instructions, see:
+- **[QUICK_START.md](QUICK_START.md)** - Quick reference guide
+- **[OAUTH2_SETUP.md](OAUTH2_SETUP.md)** - Comprehensive OAuth2 setup
+- **[OAUTH2_PROVIDER_COMPARISON.md](OAUTH2_PROVIDER_COMPARISON.md)** - Compare OAuth2 providers
+- **[OAUTH2_IMPLEMENTATION_SUMMARY.md](OAUTH2_IMPLEMENTATION_SUMMARY.md)** - Implementation details
 
 ## Building and Running
 
@@ -134,20 +196,36 @@ When the application is running, you can access the H2 console at:
 ## Project Structure
 
 ```
-mcp-server/
-├── src/
-│   ├── main/
-│   │   ├── java/com/ciaranchaney/mcpserver/
-│   │   │   ├── McpServerApplication.java    # Main application class
-│   │   │   ├── ToolsConfig.java              # MCP tools definition
-│   │   │   ├── Task.java                      # Task entity
-│   │   │   └── TaskRepository.java           # Database repository
-│   │   └── resources/
-│   │       └── application.yml                # Configuration
-│   └── test/
-│       └── java/com/ciaranchaney/mcpserver/
-│           └── DatabaseToolsTest.java         # Database tool tests
-└── build.gradle                               # Project dependencies
+mcp/
+├── agent-app/                                  # OAuth2 Client Application
+│   ├── src/main/java/.../agentapp/
+│   │   ├── AgentAppApplication.java           # Main application
+│   │   ├── AgentController.java               # REST endpoint for agent
+│   │   ├── SecurityConfig.java                # OAuth2 client security
+│   │   ├── DevSecurityConfig.java             # Dev mode (no auth)
+│   │   └── OAuth2WebClientConfig.java         # WebClient with OAuth2
+│   └── src/main/resources/
+│       └── application.yml                     # Client configuration
+│
+├── mcp-server/                                 # OAuth2 Resource Server
+│   ├── src/main/java/.../mcpserver/
+│   │   ├── McpServerApplication.java          # Main application
+│   │   ├── ToolsConfig.java                   # MCP tools definition
+│   │   ├── Task.java                          # Task entity
+│   │   ├── TaskRepository.java                # Database repository
+│   │   ├── SecurityConfig.java                # OAuth2 resource server
+│   │   └── DevSecurityConfig.java             # Dev mode (no auth)
+│   └── src/main/resources/
+│       └── application.yml                     # Server configuration
+│
+├── OAUTH2_SETUP.md                            # Comprehensive OAuth2 guide
+├── OAUTH2_PROVIDER_COMPARISON.md              # Compare OAuth2 providers
+├── OAUTH2_IMPLEMENTATION_SUMMARY.md           # Implementation details
+├── QUICK_START.md                             # Quick reference
+├── .env.template                              # Environment variables template
+├── setup-keycloak.ps1                         # Keycloak setup script
+├── test-oauth2.ps1                            # OAuth2 test script
+└── build.gradle                               # Root build configuration
 ```
 
 ## Testing

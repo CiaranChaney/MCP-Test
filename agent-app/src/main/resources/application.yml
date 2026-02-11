@@ -4,6 +4,33 @@ server:
 spring:
   application:
     name: agent-app
+
+  # OAuth2 Client Configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          # Client credentials flow for machine-to-machine communication
+          mcp-client:
+            provider: mcp-provider
+            client-id: ${OAUTH2_CLIENT_ID:mcp-client}
+            client-secret: ${OAUTH2_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope: task:read,task:write,task:delete
+          # Optional: Authorization code flow for user login
+          oauth-login:
+            provider: oauth-provider
+            client-id: mcp-client
+            client-secret: ${OAUTH2_LOGIN_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          mcp-provider:
+            token-uri: http://localhost:8089/realms/mcp-realm/protocol/openid-connect/token
+          oauth-provider:
+            issuer-uri: http://localhost:8089/realms/mcp-realm
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
@@ -12,8 +39,9 @@ spring:
         sse:
           connections:
             local-mcp:
-              url: http://localhost:8081
+              url: http://localhost:8084
 
 logging:
   level:
     root: debug
+

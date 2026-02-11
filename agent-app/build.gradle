@@ -19,7 +19,15 @@ dependencies {
     // ✅ NEW OpenAI model starter name
     implementation "org.springframework.ai:spring-ai-starter-model-openai"
 
+    // OAuth2 Client dependencies
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-client"
+
+    // WebClient for making authenticated HTTP requests
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.security:spring-security-test"
 }
 
 tasks.test {

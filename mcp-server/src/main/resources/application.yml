@@ -1,16 +1,26 @@
 server:
-  port: 8081
+  port: 8084
 
 spring:
   application:
     name: mcp-server
+
+  # OAuth2 Resource Server Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Option 1: Use issuer-uri (recommended - auto-discovers JWK Set URI)
+          issuer-uri: http://localhost:8089/realms/mcp-realm
+          # Option 2: Or directly specify JWK Set URI
+          # jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://localhost:8089/realms/mcp-realm/.well-known/jwks.json}
 
   # H2 Database Configuration
   datasource:
     url: jdbc:h2:mem:mcpdb
     driver-class-name: org.h2.Driver
     username: sa
-    password:
+    password: password123
   
   # JPA Configuration
   jpa:
